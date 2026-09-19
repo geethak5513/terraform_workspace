@@ -5,36 +5,31 @@ on:
     branches:
       - main
 
-# REQUIRED FOR OIDC: Allows the runner to request a secure token from AWS
 permissions:
   id-token: write
   contents: read
 
 jobs:
   terraform:
-    name: 'AWS Deploy via OIDC'
+    name: AWS Deploy via OIDC
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Pull the repository code
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    # 2. Authenticate to AWS using OIDC Role
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        aws-region: us-east-1 # Change to your preferred AWS region
-        audience: ://amazonaws.com
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-east-1
+          audience: sts.amazonaws.com
 
-    # 3. Setup the Terraform CLI
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-    # 4. Initialize and Apply
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
