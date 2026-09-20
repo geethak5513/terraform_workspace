@@ -13,7 +13,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Uses your account's default VPC and one of its subnets.
+# This lab uses the default VPC already present in most AWS accounts.
 data "aws_vpc" "default" {
   default = true
 }
@@ -25,7 +25,6 @@ data "aws_subnets" "default_vpc" {
   }
 }
 
-# Finds the latest Amazon Linux 2023 AMI in us-east-1.
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["137112412989"] # Amazon
@@ -39,34 +38,25 @@ data "aws_ami" "amazon_linux" {
     name   = "architecture"
     values = ["x86_64"]
   }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
 }
 
-resource "aws_instance" "vm" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t3.micro"
-  subnet_id     = data.aws_subnets.default_vpc.ids[0]
+resource "aws_instance" "lab_vm" {
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = "t3.micro"
+  subnet_id                   = data.aws_subnets.default_vpc.ids[0]
+  associate_public_ip_address = true
 
   tags = {
-    Name        = "terraform-github-actions-vm"
-    ManagedBy   = "Terraform"
-    Environment = "dev"
+    Name      = "github-actions-terraform-lab"
+    ManagedBy = "Terraform"
+    Purpose   = "learning"
   }
 }
 
 output "instance_id" {
-  value = aws_instance.vm.id
+  value = aws_instance.lab_vm.id
 }
 
 output "public_ip" {
-  value = aws_instance.vm.public_ip
+  value = aws_instance.lab_vm.public_ip
 }
